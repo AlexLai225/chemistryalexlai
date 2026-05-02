@@ -1,0 +1,705 @@
+<!DOCTYPE html><html lang="en"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<meta charset="UTF-8">
+<title>Effect of Catalyst on Decomposition of H₂O₂</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg,#eef4ff,#fdf2f8);
+    padding: 20px; color: #1f2937;
+  }
+  h1 { text-align:center; color:#1e3a8a; margin-bottom:4px; }
+  .subtitle { text-align:center; color:#6b7280; margin-bottom:18px; font-size:14px;}
+  .wrap {
+    display:grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    max-width: 1300px; margin: 0 auto;
+  }
+  .card {
+    background:white; border-radius:14px; padding:18px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .card h2 { font-size:16px; color:#1e40af; margin-bottom:10px; }
+
+  .variable-panel {
+    background: linear-gradient(90deg,#eff6ff,#f0fdf4);
+    border: 2px dashed #3b82f6;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .var-row { display:flex; align-items:center; gap:8px; margin:6px 0; flex-wrap:wrap;}
+  .var-row label {
+    font-weight:600; font-size:13px; color:#1e40af;
+    min-width: 110px;
+  }
+  .chip {
+    padding: 5px 12px; border: 2px solid #cbd5e1;
+    border-radius: 16px; cursor: pointer; font-size:13px;
+    background: white; transition:.2s; user-select:none;
+  }
+  .chip:hover{background:#f1f5f9;}
+  .chip.cat.active { background:#1e40af; color:white; border-color:#1e3a8a; }
+  .chip.temp.active { background:#ef4444; color:white; border-color:#b91c1c; }
+
+  .controls { display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;}
+  button {
+    padding:8px 16px; border:none; border-radius:8px; cursor:pointer;
+    font-weight:600; font-size:13px; transition:.2s;
+  }
+  .btn-start{background:#10b981;color:white;}
+  .btn-start:hover{background:#059669;}
+  .btn-reset{background:#ef4444;color:white;}
+  .btn-reset:hover{background:#dc2626;}
+  .btn-clear{background:#6b7280;color:white;}
+  .btn-clear:hover{background:#4b5563;}
+  .btn-start:disabled{background:#9ca3af;cursor:not-allowed;}
+
+  .readout {
+    display:flex; gap:14px; margin-top:10px;
+    background:#f3f4f6; padding:10px; border-radius:8px;
+    font-family: 'Courier New', monospace; font-size:13px;
+    flex-wrap:wrap;
+  }
+  .readout span b { color:#1e40af; }
+
+  .tip {
+    grid-column: 1/-1;
+    background: linear-gradient(90deg,#fef3c7,#fde68a);
+    border-left:6px solid #f59e0b;
+    padding:14px 18px; border-radius:10px;
+  }
+  .tip h3 { color:#92400e; margin-bottom:6px; font-size:15px; }
+  .tip p { color:#78350f; font-size:13.5px; line-height:1.55; margin-top:4px;}
+  .badge {
+    display:inline-block; background:#f59e0b; color:white;
+    padding:2px 10px; border-radius:12px; font-size:11px;
+    font-weight:bold; margin-right:8px;
+  }
+
+  svg { display:block; width:100%; height:auto; }
+
+  .speed-control { display:flex; align-items:center; gap:6px; font-size:13px;}
+  .speed-control input{width:90px;}
+
+  #legend {
+    margin-top:8px; padding:8px; background:#f9fafb; border-radius:6px;
+    font-size:12px; max-height:120px; overflow-y:auto;
+  }
+  .legend-item{display:flex; align-items:center; gap:6px; padding:2px 0;}
+  .legend-swatch{width:18px; height:3px; border-radius:2px;}
+  .legend-empty{color:#9ca3af; font-style:italic;}
+
+  .denat-warn {
+    color: #b91c1c; font-weight:bold; font-size:11px;
+    margin-left:6px;
+  }
+</style>
+</head>
+<body>
+
+<h1>🧪 Effect of Catalyst on the Decomposition of H₂O₂</h1>
+<p class="subtitle">2H₂O₂(aq) → 2H₂O(l) + O₂(g) &nbsp;|&nbsp; Compare no catalyst, MnO₂(s), and catalase at different temperatures</p>
+
+<div class="wrap">
+
+  <!-- APPARATUS -->
+  <div class="card">
+    <h2>🔬 Experimental Set-up</h2>
+
+    <div class="variable-panel">
+      <div class="var-row">
+        <label>⚗️ Catalyst:</label>
+        <div class="chip cat active" data-cat="none">No catalyst</div>
+        <div class="chip cat" data-cat="mno2">MnO₂(s)</div>
+        <div class="chip cat" data-cat="catalase">Catalase</div>
+      </div>
+      <div class="var-row">
+        <label>🌡️ Temperature:</label>
+        <div class="chip temp active" data-temp="25">25 °C</div>
+        <div class="chip temp" data-temp="37">37 °C</div>
+        <div class="chip temp" data-temp="60">60 °C</div>
+      </div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px;">
+        Same volume &amp; concentration of H₂O₂(aq) used in every run (fair test).
+      </div>
+    </div>
+
+    <svg viewBox="0 0 760 440" id="apparatus">
+      <!-- Stopwatch -->
+      <g transform="translate(670,25)">
+        <circle cx="25" cy="25" r="22" fill="white" stroke="#333" stroke-width="2"></circle>
+        <circle cx="25" cy="25" r="2" fill="#333"></circle>
+        <line id="stopwatchHand" x1="25" y1="25" x2="25" y2="8" stroke="#dc2626" stroke-width="2" stroke-linecap="round" transform="rotate(0 25 25)"></line>
+        <rect x="22" y="0" width="6" height="6" fill="#333"></rect>
+        <text id="timeLabel" x="25" y="70" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="bold">0.0 s</text>
+      </g>
+
+      <!-- Conical flask outline -->
+      <path d="M 100 225 L 100 260 L 50 395 Q 50 400 55 400 L 195 400 Q 200 400 200 395 L 150 260 L 150 225 Z" fill="white" stroke="#333" stroke-width="2.5" stroke-linejoin="round"></path>
+
+      <!-- Liquid inside flask (H2O2) -->
+      <path id="liquid" d="M 74 330 L 176 330 L 200 395 Q 200 400 195 400 L 55 400 Q 50 400 50 395 Z" fill="#e0f2fe" opacity="0.85"></path>
+
+      <!-- Stopper -->
+      <rect x="95" y="208" width="60" height="20" fill="#b45309" stroke="#78350f" stroke-width="1.5" rx="2"></rect>
+
+      <!-- Catalyst representation: MnO2 black powder at bottom -->
+      <g id="mno2Layer" opacity="0">
+        <ellipse cx="125" cy="395" rx="65" ry="4" fill="#1f2937"></ellipse>
+        <circle cx="90" cy="392" r="1.8" fill="#111827"></circle>
+        <circle cx="105" cy="394" r="2.2" fill="#111827"></circle>
+        <circle cx="120" cy="393" r="1.6" fill="#111827"></circle>
+        <circle cx="135" cy="395" r="2" fill="#111827"></circle>
+        <circle cx="150" cy="393" r="1.8" fill="#111827"></circle>
+        <circle cx="165" cy="394" r="2.2" fill="#111827"></circle>
+        <circle cx="100" cy="396" r="1.5" fill="#111827"></circle>
+        <circle cx="145" cy="396" r="1.6" fill="#111827"></circle>
+      </g>
+
+      <!-- Catalase: liver-like blob -->
+      <g id="catalaseLayer" opacity="0">
+        <ellipse cx="115" cy="388" rx="14" ry="6" fill="#92400e" stroke="#7c2d12" stroke-width="0.8"></ellipse>
+        <ellipse cx="140" cy="392" rx="11" ry="5" fill="#a16207" stroke="#7c2d12" stroke-width="0.8"></ellipse>
+        <ellipse cx="100" cy="393" rx="8" ry="4" fill="#b45309" stroke="#7c2d12" stroke-width="0.8"></ellipse>
+      </g>
+
+      <!-- Denatured catalase: coagulated white specks -->
+      <g id="denaturedLayer" opacity="0">
+        <circle cx="95" cy="370" r="2" fill="#fef3c7" stroke="#fde68a" stroke-width="0.5"></circle>
+        <circle cx="120" cy="365" r="2.5" fill="#fef3c7" stroke="#fde68a" stroke-width="0.5"></circle>
+        <circle cx="140" cy="375" r="1.8" fill="#fef3c7" stroke="#fde68a" stroke-width="0.5"></circle>
+        <circle cx="160" cy="368" r="2.2" fill="#fef3c7" stroke="#fde68a" stroke-width="0.5"></circle>
+        <circle cx="110" cy="380" r="1.5" fill="#fef3c7" stroke="#fde68a" stroke-width="0.5"></circle>
+        <circle cx="150" cy="385" r="2" fill="#fef3c7" stroke="#fde68a" stroke-width="0.5"></circle>
+      </g>
+
+      <!-- Heat waves -->
+      <g id="heatWaves" opacity="0">
+        <path d="M 60 340 Q 65 330 70 340 T 80 340" stroke="#f97316" stroke-width="1.5" fill="none" opacity="0.7"></path>
+        <path d="M 180 340 Q 185 330 190 340 T 200 340" stroke="#f97316" stroke-width="1.5" fill="none" opacity="0.7"></path>
+        <path d="M 120 340 Q 125 328 130 340 T 140 340" stroke="#f97316" stroke-width="1.5" fill="none" opacity="0.7"></path>
+      </g>
+
+      <!-- Bubbles (O2) -->
+      <g id="bubbles"></g>
+
+      <!-- Delivery tube -->
+      <path d="M 120 210 L 120 170 Q 120 150 140 150 L 290 150 Q 310 150 310 172 L 310 248" fill="none" stroke="#222" stroke-width="8" stroke-linecap="round"></path>
+      <path d="M 120 210 L 120 170 Q 120 150 140 150 L 290 150 Q 310 150 310 172 L 310 248" fill="none" stroke="white" stroke-width="5" stroke-linecap="round"></path>
+
+      <!-- Rubber connector markings -->
+      <line x1="175" y1="145" x2="175" y2="155" stroke="#333" stroke-width="1.5"></line>
+      <line x1="185" y1="145" x2="185" y2="155" stroke="#333" stroke-width="1.5"></line>
+      <line x1="245" y1="145" x2="245" y2="155" stroke="#333" stroke-width="1.5"></line>
+      <line x1="255" y1="145" x2="255" y2="155" stroke="#333" stroke-width="1.5"></line>
+
+      <!-- Syringe nozzle -->
+      <rect x="302" y="253" width="14" height="14" fill="white" stroke="#333" stroke-width="1.5"></rect>
+      <!-- Syringe barrel -->
+      <rect x="315" y="240" width="220" height="40" fill="white" stroke="#333" stroke-width="2"></rect>
+      <!-- Scale -->
+      <g stroke="#333" stroke-width="1">
+        <line x1="335" y1="240" x2="335" y2="250"></line>
+        <line x1="355" y1="240" x2="355" y2="246"></line>
+        <line x1="375" y1="240" x2="375" y2="250"></line>
+        <line x1="395" y1="240" x2="395" y2="246"></line>
+        <line x1="415" y1="240" x2="415" y2="250"></line>
+        <line x1="435" y1="240" x2="435" y2="246"></line>
+        <line x1="455" y1="240" x2="455" y2="250"></line>
+        <line x1="475" y1="240" x2="475" y2="246"></line>
+        <line x1="495" y1="240" x2="495" y2="250"></line>
+        <line x1="515" y1="240" x2="515" y2="246"></line>
+      </g>
+      <!-- Clamps -->
+      <rect x="400" y="230" width="12" height="10" fill="#333"></rect>
+      <rect x="400" y="280" width="12" height="10" fill="#333"></rect>
+      <!-- Gas fill -->
+      <rect id="gasFill" x="317" y="242" width="8" height="36" fill="#bfdbfe" opacity="0.75"></rect>
+      <!-- Plunger -->
+      <rect id="plungerSeal" x="323" y="238" width="7" height="44" fill="#374151"></rect>
+      <line id="plungerRod" x1="330" y1="260" x2="545" y2="260" stroke="#4b5563" stroke-width="3"></line>
+      <rect id="plungerHandle" x="545" y="234" width="10" height="52" fill="#6b7280" stroke="#333" stroke-width="1.5" rx="2"></rect>
+      <text id="volLabel" x="425" y="228" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="bold">Volume of O₂: 0 cm³</text>
+
+      <!-- Labels -->
+      <text x="425" y="310" text-anchor="middle" font-size="12" fill="#333">gas syringe</text>
+      <text x="240" y="410" font-size="12" fill="#333">H₂O₂(aq)</text>
+      <line x1="240" y1="405" x2="180" y2="380" stroke="#888" stroke-width="0.8"></line>
+      <text x="20" y="420" font-size="12" fill="#333" id="catalystLabel">no catalyst</text>
+      <line x1="65" y1="418" x2="105" y2="395" stroke="#888" stroke-width="0.8"></line>
+      <text x="590" y="220" font-size="12" fill="#333">plunger</text>
+      <line x1="585" y1="223" x2="555" y2="245" stroke="#888" stroke-width="0.8"></line>
+    </svg>
+
+    <div class="controls">
+      <button id="startBtn" class="btn-start">▶ Start Run</button>
+      <button id="resetBtn" class="btn-reset">↻ Reset Apparatus</button>
+      <button id="clearBtn" class="btn-clear">🗑 Clear Graph</button>
+      <div class="speed-control">
+        <label>Speed:</label>
+        <input type="range" id="speed" min="1" max="5" value="2" step="1">
+        <span id="speedVal">2×</span>
+      </div>
+    </div>
+    <div class="readout">
+      <span>⏱ <b id="tReadout">0.0</b> s</span>
+      <span>💨 <b id="vReadout">0.0</b> cm³</span>
+      <span>📊 Rate: <b id="rReadout">0.00</b> cm³/s</span>
+      <span>🔧 <b id="condReadout">No catalyst, 25°C</b></span>
+      <span id="denatNote"></span>
+    </div>
+  </div>
+
+  <!-- GRAPH -->
+  <div class="card">
+    <h2>📈 Volume of O₂ vs Time</h2>
+    <svg viewBox="0 0 520 400" id="graph">
+      <!-- Gridlines (10s = 60px, origin x=60) -->
+      <g stroke="#dbeafe" stroke-width="1">
+        <line x1="120" y1="50" x2="120" y2="340"></line>
+        <line x1="180" y1="50" x2="180" y2="340"></line>
+        <line x1="240" y1="50" x2="240" y2="340"></line>
+        <line x1="300" y1="50" x2="300" y2="340"></line>
+        <line x1="360" y1="50" x2="360" y2="340"></line>
+        <line x1="420" y1="50" x2="420" y2="340"></line>
+        <line x1="480" y1="50" x2="480" y2="340"></line>
+        <line x1="60" y1="288" x2="480" y2="288"></line>
+        <line x1="60" y1="236" x2="480" y2="236"></line>
+        <line x1="60" y1="184" x2="480" y2="184"></line>
+        <line x1="60" y1="132" x2="480" y2="132"></line>
+        <line x1="60" y1="80" x2="480" y2="80"></line>
+      </g>
+      <!-- Axes -->
+      <line x1="60" y1="340" x2="500" y2="340" stroke="#333" stroke-width="2" marker-end="url(#arrow)"></line>
+      <line x1="60" y1="340" x2="60" y2="40" stroke="#333" stroke-width="2" marker-end="url(#arrow)"></line>
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#333"></path>
+        </marker>
+      </defs>
+      <!-- x-axis labels -->
+      <text x="60" y="360" text-anchor="middle" font-size="12">0</text>
+      <text x="120" y="360" text-anchor="middle" font-size="12">10</text>
+      <text x="180" y="360" text-anchor="middle" font-size="12">20</text>
+      <text x="240" y="360" text-anchor="middle" font-size="12">30</text>
+      <text x="300" y="360" text-anchor="middle" font-size="12">40</text>
+      <text x="360" y="360" text-anchor="middle" font-size="12">50</text>
+      <text x="420" y="360" text-anchor="middle" font-size="12">60</text>
+      <text x="480" y="360" text-anchor="middle" font-size="12">70</text>
+      <text x="275" y="385" text-anchor="middle" font-size="13" font-weight="bold">Time / s</text>
+      <!-- y-axis labels -->
+      <text x="50" y="345" text-anchor="end" font-size="12">0</text>
+      <text x="50" y="292" text-anchor="end" font-size="12">20</text>
+      <text x="50" y="240" text-anchor="end" font-size="12">40</text>
+      <text x="50" y="188" text-anchor="end" font-size="12">60</text>
+      <text x="50" y="136" text-anchor="end" font-size="12">80</text>
+      <text x="50" y="84" text-anchor="end" font-size="12">100</text>
+      <text x="20" y="200" text-anchor="middle" font-size="13" font-weight="bold" transform="rotate(-90 20 200)">Volume of O₂ / cm³</text>
+
+      <!-- Clipping region -->
+      <defs>
+        <clipPath id="plotArea">
+          <rect x="60" y="40" width="420" height="300"></rect>
+        </clipPath>
+      </defs>
+
+      <g id="pastCurves" clip-path="url(#plotArea)"></g>
+      <g clip-path="url(#plotArea)">
+        <polyline id="liveCurve" fill="none" stroke="#2563eb" stroke-width="2.5" points=""></polyline>
+        <g id="liveMarkers"></g>
+      </g>
+      <circle id="cursor" cx="60" cy="340" r="5" fill="#dc2626" stroke="white" stroke-width="2"></circle>
+    </svg>
+
+    <div id="legend"><div class="legend-empty">No runs yet — choose conditions and click "Start Run"</div></div>
+  </div>
+
+  <!-- Teaching tip -->
+  <div class="tip">
+    <h3><span class="badge">HKDSE Concept</span>💡 Key Points</h3>
+    <p><strong>① Definition of catalyst:</strong> A catalyst is a substance that <em>changes (usually increases) the rate</em> of a reaction but itself remains <em>chemically unchanged</em> at the end of the reaction. The same final volume of O₂ is obtained in every run with the same volume and concentration of H₂O₂ — only the time required differs.</p>
+    <p><strong>② No catalyst (control):</strong> H₂O₂(aq) decomposes very slowly at room temperature — the curve is almost flat.</p>
+    <p><strong>③ MnO₂(s) — inorganic catalyst:</strong> Provides an alternative reaction pathway with lower activation energy. Higher temperature → more particles with E ≥ E<sub>a</sub> → <em>even faster</em> rate. MnO₂ functions well even at 60 °C.</p>
+    <p><strong>④ Catalase — biological catalyst (enzyme):</strong> Highly effective near body temperature (≈ 37 °C, its <em>optimum temperature</em>). Below this, rate is reduced; above ≈ 50 °C the catalase is <em>denatured</em> → curve becomes nearly flat at 60 °C, similar to the no-catalyst case at the same temperature. This contrast (MnO₂ vs catalase at 60 °C) illustrates a key difference between inorganic and biological catalysts.</p>
+  </div>
+
+</div>
+
+<script>
+// ===== Parameters =====
+const V_MAX = 80;            // same final volume - depends only on H2O2
+const DURATION = 70;
+let running = false;
+let simTime = 0;
+let lastRealTime = null;
+let speedMult = 2;
+let rafId = null;
+let lastMarkerTime = 0;
+
+// User-selected conditions
+let catalyst = 'none';   // 'none' | 'mno2' | 'catalase'
+let temp = 25;
+
+// Colour palette
+const COLORS = ['#2563eb','#dc2626','#16a34a','#9333ea','#ea580c','#0891b2','#db2777','#65a30d'];
+let runIndex = 0;
+let runHistory = [];
+
+// ===== DOM refs =====
+const startBtn = document.getElementById('startBtn');
+const resetBtn = document.getElementById('resetBtn');
+const clearBtn = document.getElementById('clearBtn');
+const speedSlider = document.getElementById('speed');
+const speedVal = document.getElementById('speedVal');
+const tRead = document.getElementById('tReadout');
+const vRead = document.getElementById('vReadout');
+const rRead = document.getElementById('rReadout');
+const condRead = document.getElementById('condReadout');
+const denatNote = document.getElementById('denatNote');
+const gasFill = document.getElementById('gasFill');
+const volLabel = document.getElementById('volLabel');
+const plungerSeal = document.getElementById('plungerSeal');
+const plungerRod = document.getElementById('plungerRod');
+const plungerHandle = document.getElementById('plungerHandle');
+const stopwatchHand = document.getElementById('stopwatchHand');
+const timeLabel = document.getElementById('timeLabel');
+const liveCurve = document.getElementById('liveCurve');
+const liveMarkers = document.getElementById('liveMarkers');
+const pastCurves = document.getElementById('pastCurves');
+const cursor = document.getElementById('cursor');
+const bubblesG = document.getElementById('bubbles');
+const liquid = document.getElementById('liquid');
+const heatWaves = document.getElementById('heatWaves');
+const mno2Layer = document.getElementById('mno2Layer');
+const catalaseLayer = document.getElementById('catalaseLayer');
+const denaturedLayer = document.getElementById('denaturedLayer');
+const catalystLabel = document.getElementById('catalystLabel');
+const legend = document.getElementById('legend');
+
+// ===== Effective rate constant =====
+// Base "no catalyst" rate at given temperature (doubles roughly every 15°C)
+function kNoCatalyst(T){
+  return 0.001 * Math.pow(2, (T-25)/15);
+}
+
+function getK(cat, T){
+  if (cat === 'none'){
+    return kNoCatalyst(T);
+  } else if (cat === 'mno2'){
+    // Inorganic: Arrhenius-like, doubles roughly every 15°C
+    return 0.08 * Math.pow(2, (T-25)/15);
+  } else { // catalase
+    if (T >= 50){
+      // Denatured: catalase no longer catalyses the reaction.
+      // The reaction proceeds at the SAME rate as having no catalyst at this temperature.
+      return kNoCatalyst(T);
+    }
+    // Bell curve around optimum 37°C (active enzyme)
+    return 0.13 * Math.exp(-Math.pow((T-37)/18, 2));
+  }
+}
+
+// ===== Volume & rate =====
+function volumeAt(t, K){
+  if (t >= DURATION) t = DURATION;
+  return V_MAX * (1 - Math.exp(-K*t));
+}
+function rateAt(t, K){ return V_MAX * K * Math.exp(-K*t); }
+
+// ===== Graph mapping =====
+function gx(t){ return 60 + Math.min(Math.max(t,0),DURATION)*6; }
+function gy(v){ return 340 - v*2.6; }
+
+// ===== Plunger geometry =====
+const SEAL_X_MIN = 323;
+const SEAL_X_MAX = 510;
+const ROD_LENGTH = 220;
+
+function addMarker(parent, t, v, color){
+  const m = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  m.setAttribute('cx', gx(t));
+  m.setAttribute('cy', gy(v));
+  m.setAttribute('r', 3.5);
+  m.setAttribute('fill', 'white');
+  m.setAttribute('stroke', color);
+  m.setAttribute('stroke-width', 2);
+  parent.appendChild(m);
+}
+
+function updateDisplay(t){
+  const K = getK(catalyst, temp);
+  const tCap = Math.min(t, DURATION);
+  const v = volumeAt(tCap, K);
+  const r = rateAt(tCap, K);
+  const frac = v / V_MAX;
+
+  // syringe plunger
+  const sealX = SEAL_X_MIN + frac * (SEAL_X_MAX - SEAL_X_MIN);
+  const handleX = sealX + ROD_LENGTH;
+  gasFill.setAttribute('x', 317);
+  gasFill.setAttribute('width', Math.max(0, sealX - 317));
+  plungerSeal.setAttribute('x', sealX);
+  plungerRod.setAttribute('x1', sealX + 7);
+  plungerRod.setAttribute('x2', handleX);
+  plungerHandle.setAttribute('x', handleX);
+  volLabel.textContent = `Volume of O₂: ${v.toFixed(1)} cm³`;
+
+  // stopwatch
+  const angle = (tCap / DURATION) * 360;
+  stopwatchHand.setAttribute('transform', `rotate(${angle} 25 25)`);
+  timeLabel.textContent = tCap.toFixed(1) + ' s';
+
+  tRead.textContent = tCap.toFixed(1);
+  vRead.textContent = v.toFixed(1);
+  rRead.textContent = r.toFixed(2);
+
+  // live curve
+  cursor.setAttribute('cx', gx(tCap));
+  cursor.setAttribute('cy', gy(v));
+  const pts = liveCurve.getAttribute('points');
+  liveCurve.setAttribute('points', pts + ` ${gx(tCap)},${gy(v)}`);
+
+  // markers
+  const color = COLORS[runIndex % COLORS.length];
+  if (lastMarkerTime === 0 && t >= 0){
+    addMarker(liveMarkers, 0, 0, color);
+    lastMarkerTime = 0.0001;
+  }
+  while (lastMarkerTime + 10 <= tCap + 0.01 && lastMarkerTime + 10 <= DURATION + 0.01){
+    const markT = Math.round(lastMarkerTime/10)*10 + 10;
+    if (markT > DURATION) break;
+    const markV = volumeAt(markT, K);
+    addMarker(liveMarkers, markT, markV, color);
+    lastMarkerTime = markT;
+  }
+}
+
+// ===== Bubble animation =====
+function spawnBubble(){
+  if (!running) return;
+  const K = getK(catalyst, temp);
+  const rate = rateAt(simTime, K);
+  if (rate < 0.15) return;
+  const nBubbles = Math.min(3, Math.ceil(rate/3));
+  for (let i=0;i<nBubbles;i++){
+    const b = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    const cx = 95 + Math.random()*55;
+    const cy = 380 - Math.random()*15;
+    b.setAttribute('cx', cx);
+    b.setAttribute('cy', cy);
+    b.setAttribute('r', 1.5 + Math.random()*2);
+    b.setAttribute('fill', '#93c5fd');
+    b.setAttribute('opacity', 0.85);
+    bubblesG.appendChild(b);
+    const startY = cy;
+    const endY = 330;
+    const dur = 500 + Math.random()*400;
+    const t0 = performance.now();
+    function rise(now){
+      const p = (now - t0)/dur;
+      if (p >= 1){ b.remove(); return; }
+      b.setAttribute('cy', startY + (endY-startY)*p);
+      b.setAttribute('opacity', 0.85*(1-p));
+      requestAnimationFrame(rise);
+    }
+    requestAnimationFrame(rise);
+  }
+}
+setInterval(spawnBubble, 130);
+
+// ===== Visual cues =====
+function updateVisualCues(){
+  // Liquid colour by temperature
+  if (temp <= 25) liquid.setAttribute('fill', '#e0f2fe');
+  else if (temp <= 37) liquid.setAttribute('fill', '#fed7aa');
+  else liquid.setAttribute('fill', '#fecaca');
+
+  // Heat waves at high temp
+  if (temp >= 37){
+    heatWaves.setAttribute('opacity', 1);
+    animateHeat();
+  } else {
+    heatWaves.setAttribute('opacity', 0);
+  }
+
+  // Catalyst layer visibility
+  mno2Layer.setAttribute('opacity', catalyst === 'mno2' ? 1 : 0);
+  catalaseLayer.setAttribute('opacity', (catalyst === 'catalase' && temp < 50) ? 1 : 0);
+  denaturedLayer.setAttribute('opacity', (catalyst === 'catalase' && temp >= 50) ? 1 : 0);
+
+  // Catalyst label
+  let catText = 'no catalyst';
+  if (catalyst === 'mno2') catText = 'MnO₂(s) catalyst';
+  else if (catalyst === 'catalase') catText = (temp >= 50) ? 'denatured catalase' : 'catalase';
+  catalystLabel.textContent = catText;
+
+  // Condition readout
+  const catName = catalyst==='none'?'No catalyst':catalyst==='mno2'?'MnO₂':'Catalase';
+  condRead.textContent = `${catName}, ${temp}°C`;
+
+  // Denaturation warning
+  if (catalyst === 'catalase' && temp >= 50){
+    denatNote.innerHTML = '<span class="denat-warn">⚠ Catalase denatured!</span>';
+  } else {
+    denatNote.innerHTML = '';
+  }
+}
+function animateHeat(){
+  if (temp < 37) return;
+  const paths = heatWaves.querySelectorAll('path');
+  const t = performance.now()/400;
+  paths.forEach((p,i)=>{
+    p.setAttribute('opacity', 0.4 + 0.4*Math.abs(Math.sin(t+i)));
+  });
+  requestAnimationFrame(animateHeat);
+}
+
+// ===== Main loop =====
+function tick(now){
+  if (!running) return;
+  if (lastRealTime === null) lastRealTime = now;
+  const dt = (now - lastRealTime)/1000;
+  lastRealTime = now;
+  simTime += dt * speedMult;
+  if (simTime >= DURATION) {
+    simTime = DURATION;
+    updateDisplay(simTime);
+    finishRun();
+    return;
+  }
+  updateDisplay(simTime);
+  if (running) rafId = requestAnimationFrame(tick);
+}
+
+function finishRun(){
+  running = false;
+  cancelAnimationFrame(rafId);
+
+  const color = COLORS[runIndex % COLORS.length];
+
+  // Freeze curve
+  const pts = liveCurve.getAttribute('points');
+  const frozen = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  frozen.setAttribute('fill','none');
+  frozen.setAttribute('stroke', color);
+  frozen.setAttribute('stroke-width','2.5');
+  frozen.setAttribute('points', pts);
+  frozen.setAttribute('opacity','0.85');
+  pastCurves.appendChild(frozen);
+
+  Array.from(liveMarkers.children).forEach(m=>{
+    const clone = m.cloneNode(true);
+    clone.setAttribute('opacity','0.85');
+    pastCurves.appendChild(clone);
+  });
+
+  runHistory.push({catalyst, temp, color});
+  runIndex++;
+  renderLegend();
+
+  startBtn.textContent = '▶ Start New Run';
+  startBtn.disabled = false;
+}
+
+function renderLegend(){
+  if (runHistory.length === 0){
+    legend.innerHTML = '<div class="legend-empty">No runs yet — choose conditions and click "Start Run"</div>';
+    return;
+  }
+  legend.innerHTML = '<strong>Completed runs:</strong><br>';
+  runHistory.forEach((r,i)=>{
+    const K = getK(r.catalyst, r.temp);
+    const initRate = V_MAX * K;
+    const catName = r.catalyst==='none'?'No catalyst':r.catalyst==='mno2'?'MnO₂':'Catalase';
+    const denatTag = (r.catalyst==='catalase' && r.temp>=50) ? ' <span style="color:#b91c1c;font-weight:bold;">(denatured)</span>' : '';
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `
+      <div class="legend-swatch" style="background:${r.color}"></div>
+      Run ${i+1}: <b>${catName}</b> @ <b>${r.temp}°C</b>
+      &nbsp;→&nbsp; initial rate ≈ ${initRate.toFixed(2)} cm³/s${denatTag}
+    `;
+    legend.appendChild(item);
+  });
+}
+
+// ===== Controls =====
+startBtn.addEventListener('click', ()=>{
+  if (running){
+    running = false;
+    startBtn.textContent = '▶ Resume';
+    cancelAnimationFrame(rafId);
+  } else {
+    if (simTime === 0){
+      liveCurve.setAttribute('points','');
+      liveMarkers.innerHTML = '';
+      lastMarkerTime = 0;
+      liveCurve.setAttribute('stroke', COLORS[runIndex % COLORS.length]);
+    }
+    running = true;
+    lastRealTime = null;
+    startBtn.textContent = '⏸ Pause';
+    rafId = requestAnimationFrame(tick);
+  }
+});
+
+resetBtn.addEventListener('click', ()=>{
+  running = false;
+  cancelAnimationFrame(rafId);
+  simTime = 0; lastRealTime = null; lastMarkerTime = 0;
+  liveCurve.setAttribute('points','');
+  liveMarkers.innerHTML = '';
+  bubblesG.innerHTML = '';
+  startBtn.textContent = '▶ Start Run';
+  updateDisplay(0);
+});
+
+clearBtn.addEventListener('click', ()=>{
+  pastCurves.innerHTML = '';
+  runHistory = [];
+  runIndex = 0;
+  renderLegend();
+});
+
+speedSlider.addEventListener('input', e=>{
+  speedMult = parseInt(e.target.value);
+  speedVal.textContent = speedMult + '×';
+});
+
+// Chip selection
+document.querySelectorAll('.chip.cat').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    if (running) return;
+    document.querySelectorAll('.chip.cat').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    catalyst = chip.dataset.cat;
+    updateVisualCues();
+    simTime = 0; lastMarkerTime = 0;
+    liveCurve.setAttribute('points','');
+    liveMarkers.innerHTML = '';
+    updateDisplay(0);
+    startBtn.textContent = '▶ Start Run';
+  });
+});
+document.querySelectorAll('.chip.temp').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    if (running) return;
+    document.querySelectorAll('.chip.temp').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    temp = parseInt(chip.dataset.temp);
+    updateVisualCues();
+    simTime = 0; lastMarkerTime = 0;
+    liveCurve.setAttribute('points','');
+    liveMarkers.innerHTML = '';
+    updateDisplay(0);
+    startBtn.textContent = '▶ Start Run';
+  });
+});
+
+updateVisualCues();
+updateDisplay(0);
+renderLegend();
+</script>
+
+
+</body></html>
