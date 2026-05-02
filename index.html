@@ -153,7 +153,6 @@
     color: #1e3a8a;
   }
 
-  /* Floating molecules in hero */
   .molecule {
     position: absolute;
     color: rgba(255,255,255,0.15);
@@ -191,74 +190,70 @@
     margin: 0 auto;
   }
 
-  /* ===== Featured Simulator ===== */
-  .featured {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    border-radius: 20px;
-    padding: 40px;
+  /* ===== Simulator Cards (simple & repeatable) ===== */
+  .sim-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    align-items: center;
-    box-shadow: 0 10px 40px rgba(245, 158, 11, 0.15);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 22px;
   }
-  .featured-text .badge {
-    display: inline-block;
-    background: #f59e0b;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 16px;
-  }
-  .featured-text h3 {
-    font-size: 28px;
-    color: #92400e;
-    margin-bottom: 12px;
-  }
-  .featured-text p {
-    color: #78350f;
-    margin-bottom: 20px;
-  }
-  .feature-list {
-    list-style: none;
-    margin-bottom: 24px;
-  }
-  .feature-list li {
-    color: #78350f;
-    margin: 6px 0;
-    padding-left: 24px;
-    position: relative;
-    font-size: 14px;
-  }
-  .feature-list li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: #059669;
-    font-weight: bold;
-  }
-  .btn-feature {
-    background: #92400e;
-    color: white;
-  }
-  .btn-feature:hover {
-    background: #78350f;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(146, 64, 14, 0.3);
-  }
-  .featured-visual {
+  .sim-card {
     background: white;
     border-radius: 14px;
-    padding: 24px;
-    text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 28px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
   }
-  .featured-visual svg {
-    width: 100%;
-    max-width: 320px;
-    height: auto;
+  .sim-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.15);
+    border-color: #3b82f6;
+  }
+  .sim-emoji {
+    font-size: 44px;
+    margin-bottom: 14px;
+  }
+  .sim-card h3 {
+    font-size: 18px;
+    color: #1f2937;
+    margin-bottom: 8px;
+  }
+  .sim-card p {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 16px;
+    flex-grow: 1;
+  }
+  .sim-launch {
+    color: #3b82f6;
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .sim-card:hover .sim-launch {
+    color: #1e3a8a;
+  }
+  .sim-tag {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: #fef3c7;
+    color: #b45309;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .sim-tag.new {
+    background: #fee2e2;
+    color: #b91c1c;
   }
 
   /* ===== Topic Grid ===== */
@@ -274,8 +269,6 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.06);
     transition: all 0.3s;
     border: 2px solid transparent;
-    position: relative;
-    overflow: hidden;
   }
   .topic-card:hover {
     transform: translateY(-4px);
@@ -325,7 +318,7 @@
     color: #b45309;
   }
 
-  /* ===== About / How to Use ===== */
+  /* ===== How to Use ===== */
   .info-section {
     background: linear-gradient(135deg, #eff6ff, #f0f9ff);
     border-radius: 20px;
@@ -435,10 +428,6 @@
     .menu-toggle { display: block; }
     .hero h1 { font-size: 32px; }
     .hero p { font-size: 16px; }
-    .featured {
-      grid-template-columns: 1fr;
-      padding: 28px;
-    }
     .section-header h2 { font-size: 26px; }
     .footer-inner {
       grid-template-columns: 1fr;
@@ -486,51 +475,44 @@
   </div>
 </header>
 
-<!-- ===== Featured Simulator ===== -->
+<!-- ===== Simulators (simple repeatable cards) ===== -->
 <section id="simulators">
   <div class="section-header">
-    <h2>🌟 Featured Simulator</h2>
+    <h2>🧪 Interactive Simulators</h2>
     <p>Hands-on virtual experiments that bring HKDSE practical work to life</p>
   </div>
-  <div class="featured">
-    <div class="featured-text">
-      <span class="badge">NEW</span>
+  <div class="sim-grid">
+
+    <!-- ===== SIMULATOR CARD TEMPLATE =====
+         To add a new simulator, just copy this whole <a>...</a> block
+         and change: emoji, title, description, and href link.
+         Optional: add <span class="sim-tag new">NEW</span> for highlight.
+    ============================================ -->
+    <a href="catalyst-simulator.html" class="sim-card">
+      <span class="sim-tag new">NEW</span>
+      <div class="sim-emoji">⚗️</div>
       <h3>Effect of Catalyst on H₂O₂ Decomposition</h3>
-      <p>Compare the rate of decomposition of hydrogen peroxide under different conditions — no catalyst, MnO₂(s), and catalase — at three temperatures.</p>
-      <ul class="feature-list">
-        <li>Real-time gas syringe and stopwatch animation</li>
-        <li>Live volume-time graph with multiple runs</li>
-        <li>Compare inorganic vs biological catalysts</li>
-        <li>Visualise enzyme denaturation at high temperatures</li>
-      </ul>
-      <a href="catalyst-simulator.html" class="btn btn-feature">Launch Simulator →</a>
-    </div>
-    <div class="featured-visual">
-      <svg viewBox="0 0 300 240">
-        <!-- Conical flask -->
-        <path d="M 90 80 L 90 105 L 60 200 Q 60 205 65 205 L 165 205 Q 170 205 170 200 L 140 105 L 140 80 Z" fill="white" stroke="#333" stroke-width="2"></path>
-        <path d="M 73 150 L 157 150 L 170 200 Q 170 205 165 205 L 65 205 Q 60 205 60 200 Z" fill="#fed7aa" opacity="0.85"></path>
-        <rect x="86" y="68" width="58" height="14" fill="#b45309" rx="2"></rect>
-        <!-- Bubbles -->
-        <circle cx="100" cy="170" r="3" fill="#93c5fd" opacity="0.8"></circle>
-        <circle cx="120" cy="160" r="2.5" fill="#93c5fd" opacity="0.8"></circle>
-        <circle cx="135" cy="175" r="2" fill="#93c5fd" opacity="0.8"></circle>
-        <circle cx="115" cy="180" r="2" fill="#93c5fd" opacity="0.8"></circle>
-        <!-- Tube -->
-        <path d="M 110 70 L 110 50 Q 110 35 125 35 L 200 35 Q 215 35 215 50 L 215 105" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round"></path>
-        <path d="M 110 70 L 110 50 Q 110 35 125 35 L 200 35 Q 215 35 215 50 L 215 105" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"></path>
-        <!-- Syringe -->
-        <rect x="215" y="105" width="70" height="22" fill="white" stroke="#333" stroke-width="1.5"></rect>
-        <rect x="217" y="107" width="22" height="18" fill="#bfdbfe"></rect>
-        <rect x="237" y="103" width="5" height="26" fill="#374151"></rect>
-        <line x1="242" y1="116" x2="280" y2="116" stroke="#4b5563" stroke-width="2"></line>
-        <rect x="280" y="100" width="6" height="32" fill="#6b7280"></rect>
-        <!-- Heat -->
-        <path d="M 75 130 Q 78 122 81 130 T 87 130" stroke="#f97316" stroke-width="1.5" fill="none"></path>
-        <path d="M 145 130 Q 148 122 151 130 T 157 130" stroke="#f97316" stroke-width="1.5" fill="none"></path>
-      </svg>
-      <p style="color:#92400e; font-size:13px; margin-top:10px;"><strong>2H₂O₂(aq) → 2H₂O(l) + O₂(g)</strong></p>
-    </div>
+      <p>Compare reaction rates with no catalyst, MnO₂, and catalase at different temperatures.</p>
+      <span class="sim-launch">Launch Simulator →</span>
+    </a>
+
+    <!-- Example placeholder cards — replace href when ready -->
+    <a href="#" class="sim-card">
+      <span class="sim-tag">SOON</span>
+      <div class="sim-emoji">🔥</div>
+      <h3>Electrolysis of Aqueous Solutions</h3>
+      <p>Predict products at the cathode and anode for various electrolytes.</p>
+      <span class="sim-launch">Coming Soon</span>
+    </a>
+
+    <a href="#" class="sim-card">
+      <span class="sim-tag">SOON</span>
+      <div class="sim-emoji">⚖️</div>
+      <h3>Acid–Base Titration</h3>
+      <p>Perform virtual titrations and plot pH curves in real time.</p>
+      <span class="sim-launch">Coming Soon</span>
+    </a>
+
   </div>
 </section>
 
@@ -547,35 +529,30 @@
       <p>Electronic configurations, ionic, covalent and metallic bonding.</p>
       <span class="topic-status status-coming">Coming Soon</span>
     </div>
-
     <div class="topic-card">
       <div class="topic-icon icon-2">⚡</div>
       <h3>Rate of Reaction</h3>
       <p>Catalysts, temperature, concentration and surface area effects.</p>
       <span class="topic-status status-available">Available Now</span>
     </div>
-
     <div class="topic-card">
       <div class="topic-icon icon-3">🌿</div>
       <h3>Acids, Bases &amp; Salts</h3>
       <p>pH, neutralisation, salt preparation, and titration calculations.</p>
       <span class="topic-status status-coming">Coming Soon</span>
     </div>
-
     <div class="topic-card">
       <div class="topic-icon icon-4">🔥</div>
       <h3>Redox &amp; Electrochemistry</h3>
       <p>Oxidation numbers, electrolysis, and electrochemical cells.</p>
       <span class="topic-status status-coming">Coming Soon</span>
     </div>
-
     <div class="topic-card">
       <div class="topic-icon icon-5">🧪</div>
       <h3>Organic Chemistry</h3>
       <p>Hydrocarbons, functional groups, and organic reactions.</p>
       <span class="topic-status status-coming">Coming Soon</span>
     </div>
-
     <div class="topic-card">
       <div class="topic-icon icon-6">⚖️</div>
       <h3>Chemical Equilibrium</h3>
