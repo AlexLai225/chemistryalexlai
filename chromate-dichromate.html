@@ -1,0 +1,572 @@
+<!DOCTYPE html><html lang="en"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<meta charset="UTF-8">
+<title>Le Chatelier's Principle — Chromate/Dichromate Simulator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg,#eef2f7,#dfe7ef);
+    margin: 0; padding: 24px; color: #1f2d3d;
+  }
+  .container { max-width: 1180px; margin: 0 auto; }
+  h1 { margin: 0 0 6px; color: #1a365d; }
+  .subtitle { color: #4a5568; margin-bottom: 18px; }
+
+  .eq-banner {
+    background: #fff; border-radius: 10px; padding: 18px 20px 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    text-align: center; margin-bottom: 20px;
+  }
+  .eq-row {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 10px; flex-wrap: wrap; font-size: 1.25em;
+  }
+  .species {
+    display: inline-flex; flex-direction: column; align-items: center;
+    line-height: 1.1;
+  }
+  .species .color-label {
+    font-size: .72em; font-weight: 700; margin-top: 4px;
+  }
+  .color-label.yellow { color:#c9a000; }
+  .color-label.orange { color:#d86400; }
+  .placeholder { font-size: .72em; margin-top: 4px; visibility: hidden; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 20px;
+  }
+  .panel {
+    background: #fff; border-radius: 12px; padding: 18px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.07);
+  }
+  .panel h2 { margin-top: 0; color:#1a365d; font-size:1.1em; border-bottom:2px solid #edf2f7; padding-bottom:8px; }
+
+  .flask-wrap { display:flex; justify-content:center; align-items:center; padding:10px; }
+  svg { display:block; }
+
+  .controls button {
+    padding: 12px 16px; margin: 6px 4px; border:none; border-radius:8px;
+    font-size: 0.95em; font-weight:600; cursor:pointer; color:#fff;
+    transition: transform .1s, box-shadow .2s;
+  }
+  .controls button:hover { transform: translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,.15); }
+  .controls button:active { transform: translateY(0); }
+  .btn-acid   { background:#e53e3e; }
+  .btn-alkali { background:#3182ce; }
+  .btn-reset  { background:#718096; }
+  .btn-acid:disabled, .btn-alkali:disabled, .btn-reset:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+
+  .status {
+    margin-top: 10px; font-size:.95em; background:#f7fafc;
+    padding:10px 12px; border-left:4px solid #4299e1; border-radius:4px;
+    min-height: 44px;
+  }
+  .status.shift-right { border-left-color:#d86400; }
+  .status.shift-left  { border-left-color:#c9a000; }
+
+  .data-box {
+    background:#1a202c; color:#e2e8f0; border-radius:8px;
+    padding:14px; font-family:'Courier New',monospace; font-size:.95em;
+  }
+  .data-row { display:flex; justify-content:space-between; padding:3px 0; }
+  .data-row .label { color:#a0aec0; }
+  .data-row .value { color:#68d391; }
+  .q-vs-k {
+    margin-top:10px; padding:10px; border-radius:6px;
+    background:#2d3748; text-align:center; font-weight:700;
+  }
+  .q-bar-wrap { margin-top: 10px; background:#2d3748; border-radius:6px; padding:10px; position:relative; }
+  .q-bar { height: 14px; background:#4a5568; border-radius:7px; position:relative; overflow:hidden; }
+  .q-marker { position:absolute; top:-3px; width:4px; height:20px; background:#f6ad55; border-radius:2px; transition:left .3s; }
+  .k-marker { position:absolute; top:-3px; width:4px; height:20px; background:#68d391; border-radius:2px; }
+  .q-bar-labels { display:flex; justify-content:space-between; font-size:.8em; color:#a0aec0; margin-top:4px; }
+
+  .graph-box { margin-top: 18px; background:#fff; border-radius:8px; padding:10px; border:1px solid #e2e8f0; }
+  .graph-legend { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; font-size:.85em; margin-top:4px; color:#2d3748; }
+  .legend-swatch { display:inline-block; width:14px; height:4px; vertical-align:middle; margin-right:4px; border-radius:2px; }
+
+  .tips { margin-top: 22px; background:#fffbea; border-left:5px solid #d69e2e; border-radius:6px; padding:16px 20px; }
+  .tips h2 { margin-top:0; color:#744210; display:flex; align-items:center; gap:8px; }
+  .tips h2::before { content:"💡"; }
+  .tips ul { margin: 6px 0; padding-left: 22px; }
+  .tips li { margin: 6px 0; line-height:1.5; }
+  .tips .highlight { background:#faf089; padding:1px 4px; border-radius:3px; }
+
+  .legend { font-size:.85em; color:#4a5568; margin-top:8px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Le Chatelier's Principle Simulator</h1>
+  <div class="subtitle">Chromate–Dichromate Equilibrium System</div>
+
+  <div class="eq-banner">
+    <div class="eq-row">
+      <span class="species">
+        <span>2 CrO<sub>4</sub><sup>2−</sup>(aq)</span>
+        <span class="color-label yellow">[yellow]</span>
+      </span>
+      <span class="species">
+        <span>+ 2 H<sup>+</sup>(aq)</span>
+        <span class="placeholder">[x]</span>
+      </span>
+      <span class="species">
+        <span>⇌</span>
+        <span class="placeholder">[x]</span>
+      </span>
+      <span class="species">
+        <span>Cr<sub>2</sub>O<sub>7</sub><sup>2−</sup>(aq)</span>
+        <span class="color-label orange">[orange]</span>
+      </span>
+      <span class="species">
+        <span>+ H<sub>2</sub>O(ℓ)</span>
+        <span class="placeholder">[x]</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT: Flask + Controls -->
+    <div class="panel">
+      <h2>Conical Flask</h2>
+      <div class="flask-wrap">
+        <svg width="280" height="360" viewBox="0 0 280 360">
+          <rect x="108" y="18" width="64" height="22" rx="4" fill="#4a5568"></rect>
+          <defs>
+            <clipPath id="flaskClip">
+              <path d="M 115 40 L 165 40 L 165 130 L 255 320 L 25 320 L 115 130 Z"></path>
+            </clipPath>
+            <linearGradient id="liquidGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(255,255,255,.35)"></stop>
+              <stop offset="15%" stop-color="rgba(255,255,255,0)"></stop>
+            </linearGradient>
+          </defs>
+          <g clip-path="url(#flaskClip)">
+            <rect id="liquid" x="0" y="170" width="280" height="200" fill="#ffe814"></rect>
+            <rect x="0" y="170" width="280" height="200" fill="url(#liquidGrad)"></rect>
+            <circle cx="80" cy="260" r="3" fill="rgba(255,255,255,.6)"></circle>
+            <circle cx="140" cy="290" r="2" fill="rgba(255,255,255,.5)"></circle>
+            <circle cx="190" cy="240" r="4" fill="rgba(255,255,255,.6)"></circle>
+          </g>
+          <path d="M 115 40 L 165 40 L 165 130 L 255 320 L 25 320 L 115 130 Z" fill="none" stroke="#2d3748" stroke-width="3" stroke-linejoin="round"></path>
+          <line x1="50" y1="290" x2="65" y2="290" stroke="#2d3748" stroke-width="1.5"></line>
+          <line x1="80" y1="230" x2="92" y2="230" stroke="#2d3748" stroke-width="1.5"></line>
+          <line x1="100" y1="190" x2="110" y2="190" stroke="#2d3748" stroke-width="1.5"></line>
+        </svg>
+      </div>
+      <div class="legend">Solution contains CrO<sub>4</sub><sup>2−</sup> and Cr<sub>2</sub>O<sub>7</sub><sup>2−</sup></div>
+
+      <h2 style="margin-top:18px;">Control Panel</h2>
+      <div class="controls" style="text-align:center;">
+        <button class="btn-acid" id="btnAcid">+ Add H₂SO₄ (drops)</button>
+        <button class="btn-alkali" id="btnAlkali">+ Add NaOH (drops)</button>
+        <button class="btn-reset" id="btnReset">Reset</button>
+      </div>
+      <div class="status" id="status">System is at equilibrium. Add acid or alkali to disturb it.</div>
+    </div>
+
+    <!-- RIGHT: Quantitative data + Graph -->
+    <div class="panel">
+      <h2>Quantitative Analysis — Reaction Quotient Q<sub>c</sub></h2>
+
+      <div class="data-box">
+        <div class="data-row"><span class="label">[CrO₄²⁻]</span><span class="value" id="valCrO4">0.000</span></div>
+        <div class="data-row"><span class="label">[Cr₂O₇²⁻]</span><span class="value" id="valCr2O7">0.000</span></div>
+        <div class="data-row"><span class="label">[H⁺]</span><span class="value" id="valH">—</span></div>
+        <hr style="border-color:#4a5568;">
+        <div class="data-row">
+          <span class="label">Q<sub>c</sub> = [Cr₂O₇²⁻] / ([CrO₄²⁻]²[H⁺]²)</span>
+        </div>
+        <div class="data-row"><span class="label">Current Q<sub>c</sub></span><span class="value" id="valQ">—</span></div>
+        <div class="data-row"><span class="label">Equilibrium K<sub>c</sub></span><span class="value" id="valK">—</span></div>
+
+        <div class="q-bar-wrap">
+          <div class="q-bar">
+            <div class="k-marker" style="left:50%;"></div>
+            <div class="q-marker" id="qMarker" style="left:50%;"></div>
+          </div>
+          <div class="q-bar-labels">
+            <span>Q<sub>c</sub> ≪ K<sub>c</sub> (shift →)</span>
+            <span>Q<sub>c</sub> = K<sub>c</sub></span>
+            <span>Q<sub>c</sub> ≫ K<sub>c</sub> (shift ←)</span>
+          </div>
+        </div>
+
+        <div class="q-vs-k" id="qvsk">Q<sub>c</sub> = K<sub>c</sub>  —  at equilibrium</div>
+      </div>
+
+      <!-- Concentration–time graph -->
+      <h2 style="margin-top:18px;">Concentration vs Time Graph</h2>
+      <div class="graph-box">
+        <canvas id="graph" width="560" height="280"></canvas>
+        <div class="graph-legend">
+          <span><span class="legend-swatch" style="background:#c9a000;"></span>[CrO₄²⁻]</span>
+          <span><span class="legend-swatch" style="background:#d86400;"></span>[Cr₂O₇²⁻]</span>
+          <span><span class="legend-swatch" style="background:#3182ce;"></span>[H⁺]</span>
+          <span><span class="legend-swatch" style="background:#e53e3e;"></span>Disturbance event</span>
+        </div>
+      </div>
+
+      <h2 style="margin-top:18px;">Observation</h2>
+      <div id="observation" style="background:#f7fafc;padding:12px;border-radius:6px;">
+        System is at equilibrium. Colour appears greenish-yellow (mixture of both ions).
+      </div>
+    </div>
+  </div>
+
+  <!-- HKDSE Tips -->
+  <div class="tips">
+    <h2>HKDSE Tips</h2>
+    <ul>
+      <li><strong>Effect of adding H₂SO₄ (acid):</strong> Increasing [H⁺(aq)] makes
+          <span class="highlight">Q<sub>c</sub> &lt; K<sub>c</sub></span>. To restore equilibrium, the system consumes H⁺ and CrO₄²⁻,
+          producing more Cr₂O₇²⁻. The <strong>equilibrium position shifts to the right</strong>
+          → solution turns <span style="color:#d86400;font-weight:700;">orange</span>.</li>
+
+      <li><strong>Effect of adding NaOH (alkali):</strong> OH⁻ neutralises H⁺, so [H⁺(aq)] decreases
+          and <span class="highlight">Q<sub>c</sub> &gt; K<sub>c</sub></span>. The system produces more H⁺ and CrO₄²⁻ by decomposing Cr₂O₇²⁻.
+          The <strong>equilibrium position shifts to the left</strong>
+          → solution turns <span style="color:#c9a000;font-weight:700;">yellow</span>.</li>
+
+      <li><strong>Reaction quotient Q<sub>c</sub> vs equilibrium constant K<sub>c</sub>:</strong>
+          <ul>
+            <li>Q<sub>c</sub> &lt; K<sub>c</sub> → net forward reaction until Q<sub>c</sub> = K<sub>c</sub>.</li>
+            <li>Q<sub>c</sub> &gt; K<sub>c</sub> → net backward reaction until Q<sub>c</sub> = K<sub>c</sub>.</li>
+            <li>Q<sub>c</sub> = K<sub>c</sub> → system is at equilibrium (no net change).</li>
+          </ul>
+      </li>
+
+      <li><strong>Key concept:</strong> K<sub>c</sub> depends <em>only</em> on temperature. Adding acid/alkali does NOT
+          change K<sub>c</sub> — it only changes Q<sub>c</sub>, causing the position of equilibrium to shift.</li>
+
+      <li><strong>Common exam mistake:</strong> Do not confuse "equilibrium shifts" with "K<sub>c</sub> changes".
+          Le Chatelier's shifts are about concentration/pressure/volume disturbances; only <strong>temperature change</strong>
+          alters the value of K<sub>c</sub>.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+/* ---------- Model: values chosen so shifts are clearly visible ---------- */
+const initial = {
+  CrO4:  0.080,
+  Cr2O7: 0.020,
+  H:     0.010
+};
+const K = initial.Cr2O7 / (Math.pow(initial.CrO4,2) * Math.pow(initial.H,2));
+
+let state = { ...initial };
+let animating = false;
+
+/* ---------- Time-series history ---------- */
+const history = [];
+const events  = [];
+let simTime   = 0;
+const WINDOW_SECONDS = 60;
+let lastStamp = null;
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+
+function computeQ(s) {
+  return s.Cr2O7 / (Math.pow(s.CrO4,2) * Math.pow(s.H,2));
+}
+function lerpColor(a, b, t) {
+  return [Math.round(a[0]+(b[0]-a[0])*t), Math.round(a[1]+(b[1]-a[1])*t), Math.round(a[2]+(b[2]-a[2])*t)];
+}
+
+/* Convert a number into "mantissa × 10^exponent" HTML form.
+   Uses superscript for negative exponents too. */
+function toSciHTML(value, sig = 3) {
+  if (value === 0 || !isFinite(value)) return '0';
+  const exp = Math.floor(Math.log10(Math.abs(value)));
+  const mantissa = value / Math.pow(10, exp);
+  const mStr = mantissa.toFixed(sig - 1);
+  // For exponents 0 or 1, still show as mantissa × 10^exp for consistency
+  return `${mStr} × 10<sup>${exp}</sup>`;
+}
+
+function updateDisplay() {
+  const totalCr = state.CrO4 + 2*state.Cr2O7;
+  const fracOrange = (2*state.Cr2O7) / totalCr;
+  const yellow = [255, 232, 20], orange = [220, 95, 10];
+  const c = lerpColor(yellow, orange, fracOrange);
+  $('liquid').setAttribute('fill', `rgb(${c[0]},${c[1]},${c[2]})`);
+
+  // Display all concentrations in "× 10^" notation for consistency
+  $('valCrO4').innerHTML  = toSciHTML(state.CrO4)  + ' M';
+  $('valCr2O7').innerHTML = toSciHTML(state.Cr2O7) + ' M';
+  $('valH').innerHTML     = toSciHTML(state.H)     + ' M';
+
+  const Q = computeQ(state);
+  $('valQ').innerHTML = toSciHTML(Q, 4);
+  $('valK').innerHTML = toSciHTML(K, 4);
+
+  const logRatio = Math.log10(Q/K);
+  const clamped  = Math.max(-3, Math.min(3, logRatio));
+  $('qMarker').style.left = (50 + (clamped/3)*50) + '%';
+
+  const qk = $('qvsk');
+  const ratio = Q/K;
+  if (ratio > 1.05) {
+    qk.innerHTML = `Q<sub>c</sub> &gt; K<sub>c</sub>  (Q/K = ${ratio.toFixed(2)})  →  shifts LEFT ←`;
+    qk.style.background = '#744210'; qk.style.color = '#faf089';
+  } else if (ratio < 0.95) {
+    qk.innerHTML = `Q<sub>c</sub> &lt; K<sub>c</sub>  (Q/K = ${ratio.toFixed(2)})  →  shifts RIGHT →`;
+    qk.style.background = '#7b341e'; qk.style.color = '#fbd38d';
+  } else {
+    qk.innerHTML = `Q<sub>c</sub> ≈ K<sub>c</sub>  —  at equilibrium`;
+    qk.style.background = '#22543d'; qk.style.color = '#9ae6b4';
+  }
+
+  let obs;
+  if (fracOrange > 0.7)       obs = 'Solution appears <strong style="color:#d86400;">ORANGE</strong> — mainly Cr₂O₇²⁻(aq).';
+  else if (fracOrange > 0.45) obs = 'Solution appears <strong style="color:#c87137;">orange-yellow</strong> — mixture of both ions.';
+  else if (fracOrange > 0.2)  obs = 'Solution appears <strong style="color:#b89400;">yellow-green</strong> — mixture of both ions.';
+  else                        obs = 'Solution appears <strong style="color:#c9a000;">YELLOW</strong> — mainly CrO₄²⁻(aq).';
+  $('observation').innerHTML = obs;
+}
+
+/* ---------- Solve for shift ---------- */
+function solveShift(s) {
+  let lo = -s.Cr2O7 * 0.999;
+  let hi = Math.min(s.CrO4/2, s.H/2) * 0.999;
+  const f = (xi) => {
+    const a = s.CrO4 - 2*xi, h = s.H - 2*xi, d = s.Cr2O7 + xi;
+    if (a<=0 || h<=0 || d<=0) return NaN;
+    return d / (a*a*h*h) - K;
+  };
+  let fLo = f(lo), fHi = f(hi);
+  if (isNaN(fLo) || isNaN(fHi) || fLo*fHi > 0) return 0;
+  for (let i=0; i<80; i++) {
+    const mid = (lo+hi)/2, fm = f(mid);
+    if (isNaN(fm)) break;
+    if (fm*fLo < 0) { hi=mid; fHi=fm; } else { lo=mid; fLo=fm; }
+    if (Math.abs(hi-lo) < 1e-14) break;
+  }
+  return (lo+hi)/2;
+}
+
+/* ---------- Graph (log y-axis internally, but NO numeric labels shown) ---------- */
+const canvas = $('graph');
+const ctx = canvas.getContext('2d');
+const Y_DECADES = [1e-4, 1e-3, 1e-2, 1e-1, 1];
+const logMin = Math.log10(Y_DECADES[0]);
+const logMax = Math.log10(Y_DECADES[Y_DECADES.length-1]);
+
+function drawGraph() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const padL=40, padR=14, padT=14, padB=34;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  ctx.fillStyle = '#fafafa';
+  ctx.fillRect(padL, padT, plotW, plotH);
+
+  const tMax = Math.max(WINDOW_SECONDS, simTime);
+  const tMin = Math.max(0, tMax - WINDOW_SECONDS);
+
+  const tx = t => padL + ((t - tMin)/(tMax - tMin))*plotW;
+  const vy = v => {
+    const lv = Math.log10(Math.max(v, 1e-6));
+    const clamped = Math.max(logMin, Math.min(logMax, lv));
+    return padT + plotH - ((clamped - logMin)/(logMax - logMin))*plotH;
+  };
+
+  // Gridlines — no numeric labels
+  for (let d = logMin; d <= logMax; d++) {
+    const yMajor = padT + plotH - ((d - logMin)/(logMax - logMin))*plotH;
+    ctx.strokeStyle = '#cbd5e0'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padL, yMajor); ctx.lineTo(padL+plotW, yMajor); ctx.stroke();
+    if (d < logMax) {
+      for (let m=2; m<10; m++) {
+        const sub = d + Math.log10(m);
+        const yMinor = padT + plotH - ((sub - logMin)/(logMax - logMin))*plotH;
+        ctx.strokeStyle = '#edf2f7';
+        ctx.beginPath(); ctx.moveTo(padL, yMinor); ctx.lineTo(padL+plotW, yMinor); ctx.stroke();
+      }
+    }
+  }
+
+  // Vertical gridlines only (no numeric labels)
+  const xSteps = 6;
+  for (let i=1; i<xSteps; i++) {
+    const x = padL + plotW*i/xSteps;
+    ctx.strokeStyle = '#edf2f7';
+    ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT+plotH); ctx.stroke();
+  }
+
+  // Axis titles only (no numeric ticks)
+  ctx.save();
+  ctx.translate(14, padT+plotH/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.fillStyle='#2d3748'; ctx.font='12px sans-serif';
+  ctx.fillText('Concentration / mol dm⁻³', 0, 0);
+  ctx.restore();
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#2d3748'; ctx.font = '12px sans-serif';
+  ctx.fillText('Time', padL+plotW/2, H-10);
+
+  // Arrow-style axis lines
+  ctx.strokeStyle='#2d3748'; ctx.lineWidth=1.2;
+  ctx.beginPath();
+  ctx.moveTo(padL,padT);
+  ctx.lineTo(padL,padT+plotH);
+  ctx.lineTo(padL+plotW,padT+plotH);
+  ctx.stroke();
+
+  if (history.length < 2) return;
+
+  // Clip strictly inside plot area
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(padL, padT, plotW, plotH);
+  ctx.clip();
+
+  // Event markers
+  ctx.save();
+  ctx.setLineDash([5,4]);
+  ctx.strokeStyle='#e53e3e'; ctx.lineWidth=1.2;
+  for (const ev of events) {
+    if (ev.t < tMin || ev.t > tMax) continue;
+    const x = tx(ev.t);
+    ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT+plotH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#e53e3e'; ctx.font='10px sans-serif'; ctx.textAlign='left';
+    ctx.fillText(ev.label, x+3, padT+10);
+    ctx.setLineDash([5,4]);
+  }
+  ctx.restore();
+
+  function drawSeries(key, color) {
+    ctx.strokeStyle = color; ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    let started = false;
+    for (const p of history) {
+      if (p.t < tMin - 1) continue;
+      const x = tx(p.t), y = vy(p[key]);
+      if (!started) { ctx.moveTo(x,y); started = true; }
+      else           ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+
+  drawSeries('CrO4',  '#c9a000');
+  drawSeries('Cr2O7', '#d86400');
+  drawSeries('H',     '#3182ce');
+
+  if (history.length) {
+    const last = history[history.length-1];
+    const drawDot = (v, color) => {
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(tx(last.t), vy(v), 3.5, 0, 2*Math.PI); ctx.fill();
+    };
+    drawDot(last.CrO4,  '#c9a000');
+    drawDot(last.Cr2O7, '#d86400');
+    drawDot(last.H,     '#3182ce');
+  }
+
+  ctx.restore();
+}
+
+/* ---------- Main loop ---------- */
+function loop(now) {
+  if (lastStamp === null) lastStamp = now;
+  const dt = Math.min(0.1, (now - lastStamp)/1000);
+  lastStamp = now;
+  simTime += dt;
+
+  history.push({ t: simTime, CrO4: state.CrO4, Cr2O7: state.Cr2O7, H: state.H });
+  while (history.length && history[0].t < simTime - WINDOW_SECONDS*3) history.shift();
+
+  drawGraph();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- Slow animation toward new equilibrium ---------- */
+function animateToEquilibrium() {
+  if (animating) return;
+  animating = true;
+  setButtons(false);
+
+  const start = { ...state };
+  const xi = solveShift(state);
+  const target = {
+    CrO4:  state.CrO4 - 2*xi,
+    Cr2O7: state.Cr2O7 + xi,
+    H:     state.H    - 2*xi
+  };
+
+  const duration = 6000;
+  const t0 = performance.now();
+  function frame(now) {
+    const t = Math.min(1, (now-t0)/duration);
+    const ease = 1 - Math.pow(1-t, 2.2);
+    state.CrO4  = start.CrO4  + (target.CrO4  - start.CrO4 )*ease;
+    state.Cr2O7 = start.Cr2O7 + (target.Cr2O7 - start.Cr2O7)*ease;
+    state.H     = start.H     + (target.H     - start.H    )*ease;
+    updateDisplay();
+    if (t < 1) requestAnimationFrame(frame);
+    else {
+      animating = false;
+      setButtons(true);
+      const s = $('status');
+      s.className = 'status';
+      s.textContent = 'New equilibrium established. Q has returned to K.';
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function setButtons(enabled) {
+  $('btnAcid').disabled   = !enabled;
+  $('btnAlkali').disabled = !enabled;
+  $('btnReset').disabled  = !enabled;
+}
+
+/* ---------- Actions ---------- */
+function addAcid() {
+  if (animating) return;
+  state.H += 0.020;
+  events.push({ t: simTime, label: '+ H₂SO₄' });
+  updateDisplay();
+  const s = $('status');
+  s.className = 'status shift-right';
+  s.innerHTML = '<strong>H⁺ added.</strong> [H⁺] increased → Q<sub>c</sub> &lt; K<sub>c</sub> → shifts <strong>RIGHT</strong> (more Cr₂O₇²⁻, orange). Watch the graph…';
+  setTimeout(()=>animateToEquilibrium(), 400);
+}
+function addAlkali() {
+  if (animating) return;
+  state.H = Math.max(state.H - 0.009, 1e-6);
+  events.push({ t: simTime, label: '+ NaOH' });
+  updateDisplay();
+  const s = $('status');
+  s.className = 'status shift-left';
+  s.innerHTML = '<strong>OH⁻ added.</strong> [H⁺] decreased → Q<sub>c</sub> &gt; K<sub>c</sub> → shifts <strong>LEFT</strong> (more CrO₄²⁻, yellow). Watch the graph…';
+  setTimeout(()=>animateToEquilibrium(), 400);
+}
+function reset() {
+  if (animating) return;
+  state = { ...initial };
+  history.length = 0;
+  events.length = 0;
+  simTime = 0;
+  updateDisplay();
+  $('status').className = 'status';
+  $('status').textContent = 'System reset to initial equilibrium.';
+}
+
+$('btnAcid').addEventListener('click', addAcid);
+$('btnAlkali').addEventListener('click', addAlkali);
+$('btnReset').addEventListener('click', reset);
+
+updateDisplay();
+requestAnimationFrame(loop);
+</script>
+
+
+</body></html>
