@@ -1,0 +1,623 @@
+<!DOCTYPE html><html lang="en"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<meta charset="UTF-8">
+<title>pH Titration Simulator</title>
+<style>
+  *{box-sizing:border-box;}
+  body{font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif;
+       background:linear-gradient(135deg,#eef2f7,#dfe7ef);margin:0;padding:24px;color:#1f2d3d;}
+  .container{max-width:1200px;margin:0 auto;}
+  h1{margin:0 0 6px;color:#1a365d;}
+  .subtitle{color:#4a5568;margin-bottom:18px;}
+
+  .grid{display:grid;grid-template-columns:1fr 1.15fr;gap:20px;}
+  .panel{background:#fff;border-radius:12px;padding:18px;box-shadow:0 3px 10px rgba(0,0,0,.07);}
+  .panel h2{margin-top:0;color:#1a365d;font-size:1.08em;border-bottom:2px solid #edf2f7;padding-bottom:8px;}
+
+  .setup-wrap{display:flex;justify-content:center;padding:6px;}
+
+  .control-group{background:#f7fafc;border-radius:8px;padding:12px;margin-top:10px;}
+  .control-group h3{margin:0 0 8px;font-size:.95em;color:#2d3748;}
+
+  select{width:100%;padding:8px 10px;border:2px solid #e2e8f0;border-radius:6px;
+         background:#fff;font-size:.92em;cursor:pointer;}
+  select:focus{outline:none;border-color:#4299e1;}
+
+  .radio-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .radio-row label{display:flex;align-items:center;gap:4px;padding:6px 10px;
+                   background:#fff;border:2px solid #e2e8f0;border-radius:6px;
+                   cursor:pointer;font-size:.88em;transition:all .15s;}
+  .radio-row label:hover{border-color:#4299e1;}
+  .radio-row input[type=radio]{accent-color:#4299e1;}
+  .radio-row label.active{border-color:#4299e1;background:#ebf8ff;}
+
+  .ind-range{font-size:.8em;color:#4a5568;margin-top:6px;display:block;}
+
+  .slider-wrap{display:flex;align-items:center;gap:10px;margin-top:4px;}
+  input[type=range]{flex:1;accent-color:#3182ce;}
+  .vol-readout{font-family:'Courier New',monospace;background:#2d3748;color:#68d391;
+               padding:4px 10px;border-radius:4px;font-size:.95em;min-width:80px;text-align:center;}
+
+  .btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .btn-row button{padding:9px 14px;border:none;border-radius:6px;font-weight:600;
+                  cursor:pointer;color:#fff;font-size:.9em;transition:transform .1s;}
+  .btn-row button:hover{transform:translateY(-1px);}
+  .btn-drop{background:#3182ce;}
+  .btn-fill{background:#38a169;}
+  .btn-reset{background:#718096;}
+
+  .graph-box{background:#fff;border-radius:8px;border:1px solid #e2e8f0;padding:8px;}
+  canvas{display:block;width:100%;height:auto;}
+
+  .info-box{margin-top:10px;padding:10px 12px;background:#f7fafc;border-left:4px solid #4299e1;
+            border-radius:4px;font-size:.9em;}
+  .info-box strong{color:#2c5282;}
+
+  .color-preview{display:inline-block;width:18px;height:18px;border-radius:50%;
+                 border:1px solid #cbd5e0;vertical-align:middle;margin:0 4px;}
+
+  .tips{margin-top:22px;background:#fffbea;border-left:5px solid #d69e2e;
+        border-radius:6px;padding:16px 20px;}
+  .tips h2{margin-top:0;color:#744210;display:flex;align-items:center;gap:8px;}
+  .tips h2::before{content:"💡";}
+  .tips ul{margin:6px 0;padding-left:22px;}
+  .tips li{margin:8px 0;line-height:1.55;}
+  .highlight{background:#faf089;padding:1px 4px;border-radius:3px;font-weight:600;}
+  .tips table{width:100%;border-collapse:collapse;margin-top:10px;font-size:.9em;background:#fff;}
+  .tips th,.tips td{border:1px solid #e2e8f0;padding:8px 10px;text-align:left;vertical-align:top;}
+  .tips th{background:#fef5e7;color:#744210;}
+
+  @media (max-width:860px){.grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>pH Titration Simulator</h1>
+  <div class="subtitle">Monitoring pH Change During an Acid–Alkali Titration</div>
+
+  <div class="grid">
+    <!-- LEFT: Experimental setup -->
+    <div class="panel">
+      <h2>Experimental Set-up</h2>
+      <div class="setup-wrap">
+        <svg id="setup" width="360" height="420" viewBox="0 0 360 420">
+          <!-- Burette -->
+          <rect x="150" y="20" width="26" height="230" fill="#f0f8ff" stroke="#2d3748" stroke-width="1.5"></rect>
+          <g stroke="#2d3748" stroke-width="1">
+            <line x1="150" y1="40" x2="158" y2="40"></line>
+            <line x1="150" y1="60" x2="156" y2="60"></line>
+            <line x1="150" y1="80" x2="158" y2="80"></line>
+            <line x1="150" y1="100" x2="156" y2="100"></line>
+            <line x1="150" y1="120" x2="158" y2="120"></line>
+            <line x1="150" y1="140" x2="156" y2="140"></line>
+            <line x1="150" y1="160" x2="158" y2="160"></line>
+            <line x1="150" y1="180" x2="156" y2="180"></line>
+            <line x1="150" y1="200" x2="156" y2="200"></line>
+            <line x1="150" y1="220" x2="156" y2="220"></line>
+          </g>
+          <rect id="buretteLiquid" x="151" y="40" width="24" height="210" fill="#d0e8f2" opacity="0.7"></rect>
+          <!-- Stopcock -->
+          <rect x="145" y="250" width="36" height="8" fill="#2d3748"></rect>
+          <circle cx="163" cy="258" r="5" fill="#4a5568"></circle>
+          <rect x="160" y="258" width="6" height="15" fill="#4a5568"></rect>
+          <polygon points="158,273 168,273 166,285 160,285" fill="#2d3748"></polygon>
+          <!-- Burette label -->
+          <text id="buretteLabel" x="188" y="50" font-size="11" fill="#2d3748">0.10 M NaOH(aq)</text>
+          <text x="188" y="64" font-size="10" fill="#4a5568">(burette)</text>
+
+          <!-- Falling drop -->
+          <circle id="drop" cx="163" cy="290" r="3" fill="#3182ce" opacity="0"></circle>
+
+          <!-- Beaker -->
+          <path d="M 100 300 L 100 380 Q 100 392 112 392 L 234 392 Q 246 392 246 380 L 246 300" fill="none" stroke="#2d3748" stroke-width="2"></path>
+          <path d="M 100 300 L 94 296 L 94 306 L 100 310" fill="none" stroke="#2d3748" stroke-width="2"></path>
+          <defs>
+            <clipPath id="beakerClip">
+              <path d="M 102 302 L 102 380 Q 102 390 112 390 L 234 390 Q 244 390 244 380 L 244 302 Z"></path>
+            </clipPath>
+          </defs>
+          <g clip-path="url(#beakerClip)">
+            <rect id="solution" x="100" y="335" width="146" height="60" fill="#e3f2fd"></rect>
+            <rect x="100" y="335" width="146" height="6" fill="rgba(255,255,255,.4)"></rect>
+          </g>
+          <!-- Beaker label -->
+          <text x="100" y="410" font-size="10.5" fill="#2d3748">
+            <tspan id="beakerLabel">25.0 cm³ of 0.10 M HCl(aq)</tspan>
+          </text>
+
+          <!-- pH electrode -->
+          <rect x="198" y="280" width="10" height="90" fill="#4a5568" rx="2"></rect>
+          <rect x="196" y="365" width="14" height="10" fill="#2d3748" rx="2"></rect>
+          <path d="M 203 280 Q 240 250 275 260" fill="none" stroke="#2d3748" stroke-width="1.5"></path>
+
+          <!-- pH meter -->
+          <rect x="270" y="255" width="78" height="64" rx="6" fill="#e2e8f0" stroke="#2d3748" stroke-width="1.5"></rect>
+          <rect x="278" y="263" width="62" height="26" rx="3" fill="#1a202c"></rect>
+          <text id="phMeterValue" x="309" y="283" text-anchor="middle" font-family="Courier New" font-size="16" font-weight="bold" fill="#e53e3e">1.00</text>
+          <text x="309" y="302" text-anchor="middle" font-size="9" fill="#2d3748">pH</text>
+          <circle cx="283" cy="311" r="3" fill="#68d391"></circle>
+          <text x="292" y="314" font-size="8" fill="#2d3748">pH meter</text>
+        </svg>
+      </div>
+
+      <!-- Titration type -->
+      <div class="control-group">
+        <h3>Select Titration Type</h3>
+        <select id="titrationSelect">
+          <option value="SA_SB">(i) 25.0 cm³ 0.10 M HCl(aq)  vs  0.10 M NaOH(aq)</option>
+          <option value="WA_SB">(ii) 25.0 cm³ 0.10 M CH₃COOH(aq)  vs  0.10 M NaOH(aq)</option>
+          <option value="WB_SA">(iii) 25.0 cm³ 0.10 M NH₃(aq)  vs  0.10 M HCl(aq)</option>
+          <option value="WB_WA">(iv) 25.0 cm³ 0.10 M NH₃(aq)  vs  0.10 M CH₃COOH(aq)</option>
+        </select>
+        <div class="ind-range" id="typeDescription">Strong acid + Strong alkali</div>
+      </div>
+
+      <!-- Indicator -->
+      <div class="control-group">
+        <h3>Indicator</h3>
+        <div class="radio-row" id="indChoice">
+          <label class="active"><input type="radio" name="ind" value="none" checked=""> None (pH meter only)</label>
+          <label>
+            <input type="radio" name="ind" value="mo">
+            <span>Methyl orange</span>
+            <span class="color-preview" style="background:#ff9800;"></span>
+          </label>
+          <label>
+            <input type="radio" name="ind" value="pp">
+            <span>Phenolphthalein</span>
+            <span class="color-preview" style="background:#ff69b4;"></span>
+          </label>
+        </div>
+        <div id="indRange" class="ind-range">No indicator selected.</div>
+      </div>
+
+      <!-- Volume control -->
+      <div class="control-group">
+        <h3 id="volHeading">Volume of NaOH(aq) added</h3>
+        <div class="slider-wrap">
+          <input type="range" id="volSlider" min="0" max="50" step="0.1" value="0">
+          <span class="vol-readout" id="volReadout">0.0 cm³</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn-drop" id="btnDrop">+ 1.0 cm³</button>
+          <button class="btn-drop" id="btnDropSmall">+ 0.1 cm³</button>
+          <button class="btn-fill" id="btnFill">Fast-forward</button>
+          <button class="btn-reset" id="btnReset">Reset</button>
+        </div>
+      </div>
+
+      <div class="info-box" id="infoBox">
+        Current pH: <strong id="phText">1.00</strong> &nbsp;|&nbsp;
+        Moles of titrant added: <strong id="nText">0.0000</strong> mol
+      </div>
+    </div>
+
+    <!-- RIGHT: Titration curve -->
+    <div class="panel">
+      <h2>Titration Curve (pH vs Volume of Titrant added)</h2>
+      <div class="graph-box">
+        <canvas id="graph" width="600" height="420"></canvas>
+      </div>
+      <div class="info-box">
+        <strong>Equivalence point:</strong>
+        <span id="eqInfo">pH = 7.0 at 25.0 cm³ (strong acid + strong alkali)</span>
+      </div>
+      <div class="info-box" id="indicatorInfo" style="border-left-color:#38a169;">
+        Select an indicator to see its transition range on the curve.
+      </div>
+      <div class="info-box" id="suitabilityInfo" style="border-left-color:#d69e2e;">
+        Suitable indicator for this titration will be shown here.
+      </div>
+    </div>
+  </div>
+
+  <!-- HKDSE Tips -->
+  <div class="tips">
+    <h2>HKDSE Tips — Choosing the Right Indicator</h2>
+    <p style="margin:6px 0;">
+      An acid-base indicator is suitable only if its <strong>pH transition range falls entirely within
+      the sharp vertical portion</strong> of the titration curve (the "pH jump" near the equivalence point).
+    </p>
+
+    <table>
+      <tbody><tr>
+        <th>Titration Type</th>
+        <th>pH at Equivalence</th>
+        <th>pH Jump Range</th>
+        <th>Suitable Indicator</th>
+      </tr>
+      <tr>
+        <td>Strong acid + Strong alkali<br><em>(e.g. HCl + NaOH)</em></td>
+        <td>7</td>
+        <td>~ 3 to 11</td>
+        <td><span class="highlight">Either</span> methyl orange or phenolphthalein</td>
+      </tr>
+      <tr>
+        <td>Weak acid + Strong alkali<br><em>(e.g. CH₃COOH + NaOH)</em></td>
+        <td>~ 8.7</td>
+        <td>~ 7 to 11</td>
+        <td><span class="highlight">Phenolphthalein only</span> (methyl orange changes colour too early, within the buffer region)</td>
+      </tr>
+      <tr>
+        <td>Strong acid + Weak alkali<br><em>(e.g. HCl + NH₃)</em></td>
+        <td>~ 5.3</td>
+        <td>~ 3 to 7</td>
+        <td><span class="highlight">Methyl orange only</span> (phenolphthalein changes colour too early — it decolourises while the solution is still alkaline, well before the equivalence point)</td>
+      </tr>
+      <tr>
+        <td>Weak acid + Weak alkali<br><em>(e.g. CH₃COOH + NH₃)</em></td>
+        <td>~ 7</td>
+        <td>No sharp jump</td>
+        <td><span class="highlight">No suitable indicator</span> — use a pH meter instead</td>
+      </tr>
+    </tbody></table>
+
+    <ul>
+      <li><strong>Methyl orange</strong> transitions from <span style="color:#e53e3e;font-weight:700;">red</span>
+          (pH &lt; 3.1) to <span style="color:#d69e2e;font-weight:700;">yellow</span> (pH &gt; 4.4),
+          passing through orange around pH 3.7.</li>
+      <li><strong>Phenolphthalein</strong> transitions from <span style="color:#4a5568;font-weight:700;">colourless</span>
+          (pH &lt; 8.3) to <span style="color:#d53f8c;font-weight:700;">pink</span> (pH &gt; 10.0).</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+/* ============ TITRATION DATA ============ */
+const titrations = {
+  'SA_SB': {
+    label:'(i) HCl + NaOH',
+    description:'Strong acid + Strong alkali',
+    beakerLabel:'25.0 cm³ of 0.10 M HCl(aq)',
+    buretteLabel:'0.10 M NaOH(aq)',
+    volHeading:'Volume of NaOH(aq) added',
+    titrant:'NaOH(aq)',
+    eqPH: 7.0,
+    suitable:{ mo:true, pp:true },
+    suitabilityText:'Either <strong>methyl orange</strong> or <strong>phenolphthalein</strong> can be used — the pH jump (~3 to 11) fully covers both transition ranges.'
+  },
+  'WA_SB': {
+    label:'(ii) CH₃COOH + NaOH',
+    description:'Weak acid + Strong alkali',
+    beakerLabel:'25.0 cm³ of 0.10 M CH₃COOH(aq)',
+    buretteLabel:'0.10 M NaOH(aq)',
+    volHeading:'Volume of NaOH(aq) added',
+    titrant:'NaOH(aq)',
+    eqPH: 8.72,
+    suitable:{ mo:false, pp:true },
+    suitabilityText:'Use <strong>phenolphthalein</strong>. The equivalence point (pH ≈ 8.7) and pH jump (~7–11) lie within its transition range. Methyl orange would change colour far before the equivalence point.'
+  },
+  'WB_SA': {
+    label:'(iii) NH₃ + HCl',
+    description:'Weak alkali + Strong acid',
+    beakerLabel:'25.0 cm³ of 0.10 M NH₃(aq)',
+    buretteLabel:'0.10 M HCl(aq)',
+    volHeading:'Volume of HCl(aq) added',
+    titrant:'HCl(aq)',
+    eqPH: 5.28,
+    suitable:{ mo:true, pp:false },
+    suitabilityText:'Use <strong>methyl orange</strong>. The equivalence point (pH ≈ 5.3) and pH jump (~7–3) lie within its transition range. Phenolphthalein would change colour (decolourise) too early — while the solution is still alkaline, well before the equivalence point.'
+  },
+  'WB_WA': {
+    label:'(iv) NH₃ + CH₃COOH',
+    description:'Weak alkali + Weak acid',
+    beakerLabel:'25.0 cm³ of 0.10 M NH₃(aq)',
+    buretteLabel:'0.10 M CH₃COOH(aq)',
+    volHeading:'Volume of CH₃COOH(aq) added',
+    titrant:'CH₃COOH(aq)',
+    eqPH: 7.0,
+    suitable:{ mo:false, pp:false },
+    suitabilityText:'<strong>No suitable indicator</strong>. There is no sharp pH jump around the equivalence point, so any colour change would be too gradual to give an accurate end-point. A pH meter is required.'
+  }
+};
+
+/* ============ pH MODEL (rigorous charge-balance solver) ============ */
+const Ka_ac  = 1.8e-5;         // CH3COOH
+const Kb_am  = 1.8e-5;         // NH3
+const Ka_NH4 = 1e-14 / Kb_am;  // 5.56e-10
+const Kw     = 1e-14;
+
+function computeH(type, V) {
+  const C0 = 0.10, V0 = 25.0, Ct = 0.10;
+  const n0 = C0 * V0 / 1000;
+  const nT = Ct * V  / 1000;
+  const Vtot = (V0 + V) / 1000;
+
+  let f;
+  if (type === 'SA_SB') {
+    const Ca = n0/Vtot, Cb = nT/Vtot;
+    f = h => h + Cb - Kw/h - Ca;
+  } else if (type === 'WA_SB') {
+    const CA = n0/Vtot, Cb = nT/Vtot;
+    f = h => h + Cb - Kw/h - CA * Ka_ac/(h + Ka_ac);
+  } else if (type === 'WB_SA') {
+    const CB = n0/Vtot, Ca = nT/Vtot;
+    f = h => h + CB * h/(h + Ka_NH4) - Kw/h - Ca;
+  } else { // WB_WA
+    const CB = n0/Vtot, CA = nT/Vtot;
+    f = h => h + CB * h/(h + Ka_NH4) - Kw/h - CA * Ka_ac/(h + Ka_ac);
+  }
+
+  let lo = 1e-14, hi = 1;
+  for (let i = 0; i < 80; i++) {
+    const mid = Math.sqrt(lo * hi);
+    if (f(mid) > 0) hi = mid; else lo = mid;
+  }
+  return Math.sqrt(lo * hi);
+}
+
+function computePH(type, V) {
+  return -Math.log10(computeH(type, V));
+}
+
+/* ============ STATE ============ */
+let state = { type:'SA_SB', indicator:'none', volume:0 };
+
+const indicatorData = {
+  mo: { name:'Methyl orange',   low:3.1, high:4.4,
+        colorLow:'#e53e3e', colorHigh:'#f6e05e',
+        labelLow:'red', labelMid:'orange', labelHigh:'yellow' },
+  pp: { name:'Phenolphthalein', low:8.3, high:10.0,
+        colorLow:'#f7fafc', colorHigh:'#d53f8c',
+        labelLow:'colourless', labelMid:'pale pink', labelHigh:'pink/magenta' }
+};
+
+/* ============ DOM ============ */
+const $ = id => document.getElementById(id);
+const volSlider = $('volSlider'), volReadout = $('volReadout');
+const phMeterValue = $('phMeterValue'), phText = $('phText'), nText = $('nText');
+const solution = $('solution');
+const beakerLabelEl = $('beakerLabel');
+const buretteLabelEl = $('buretteLabel');
+const volHeadingEl = $('volHeading');
+const typeDescription = $('typeDescription');
+const indRange = $('indRange'), indicatorInfo = $('indicatorInfo');
+const suitabilityInfo = $('suitabilityInfo');
+const eqInfo = $('eqInfo');
+const drop = $('drop');
+
+/* ============ GRAPH ============ */
+const canvas = $('graph');
+const ctx = canvas.getContext('2d');
+
+function drawGraph() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const padL=55, padR=20, padT=20, padB=50;
+  const pw = W - padL - padR, ph = H - padT - padB;
+
+  ctx.fillStyle = '#fafbfc';
+  ctx.fillRect(padL, padT, pw, ph);
+
+  const xMin = 0, xMax = 50, yMin = 0, yMax = 14;
+  const tx = v => padL + (v - xMin)/(xMax - xMin) * pw;
+  const ty = p => padT + ph - (p - yMin)/(yMax - yMin) * ph;
+
+  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+  for (let v = 0; v <= 50; v += 5) { ctx.beginPath(); ctx.moveTo(tx(v), padT); ctx.lineTo(tx(v), padT+ph); ctx.stroke(); }
+  for (let p = 0; p <= 14; p += 2) { ctx.beginPath(); ctx.moveTo(padL, ty(p)); ctx.lineTo(padL+pw, ty(p)); ctx.stroke(); }
+
+  if (state.indicator !== 'none') {
+    const ind = indicatorData[state.indicator];
+    ctx.fillStyle = state.indicator === 'mo'
+      ? 'rgba(237,137,54,0.18)' : 'rgba(213,63,140,0.18)';
+    ctx.fillRect(padL, ty(ind.high), pw, ty(ind.low) - ty(ind.high));
+    ctx.setLineDash([4,3]);
+    ctx.strokeStyle = state.indicator === 'mo' ? '#c05621' : '#97266d';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(padL, ty(ind.low));  ctx.lineTo(padL+pw, ty(ind.low));  ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(padL, ty(ind.high)); ctx.lineTo(padL+pw, ty(ind.high)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = state.indicator === 'mo' ? '#c05621' : '#97266d';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${ind.name} (${ind.low}–${ind.high})`, padL + 6, ty(ind.high) - 4);
+  }
+
+  ctx.strokeStyle = '#2d3748'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+ph); ctx.lineTo(padL+pw, padT+ph); ctx.stroke();
+
+  ctx.fillStyle = '#2d3748'; ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let v = 0; v <= 50; v += 5) ctx.fillText(v.toString(), tx(v), padT+ph+5);
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (let p = 0; p <= 14; p += 2) ctx.fillText(p.toString(), padL-6, ty(p));
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.font = 'bold 12px sans-serif';
+  const titr = titrations[state.type];
+  ctx.fillText(`Volume of ${titr.titrant} added / cm³`, padL + pw/2, H - 6);
+  ctx.save();
+  ctx.translate(15, padT + ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('pH', 0, 0);
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath(); ctx.rect(padL, padT, pw, ph); ctx.clip();
+
+  ctx.strokeStyle = '#cbd5e0'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i <= 500; i++) {
+    const v = i * 50/500;
+    const pH = computePH(state.type, v);
+    const x = tx(v), y = ty(pH);
+    if (i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  ctx.strokeStyle = '#2b6cb0'; ctx.lineWidth = 2.6;
+  ctx.beginPath();
+  const steps = Math.max(2, Math.ceil(state.volume * 10));
+  for (let i = 0; i <= steps; i++) {
+    const v = (state.volume * i) / steps;
+    const pH = computePH(state.type, v);
+    const x = tx(v), y = ty(pH);
+    if (i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  const curPH = computePH(state.type, state.volume);
+  ctx.fillStyle = '#e53e3e';
+  ctx.beginPath(); ctx.arc(tx(state.volume), ty(curPH), 5, 0, 2*Math.PI); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+
+  const eqPH = titr.eqPH;
+  ctx.fillStyle = '#38a169';
+  ctx.beginPath(); ctx.arc(tx(25.0), ty(eqPH), 4, 0, 2*Math.PI); ctx.fill();
+  ctx.font = 'bold 10px sans-serif';
+  ctx.fillStyle = '#22543d';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(`equivalence (25.0 cm³, pH≈${eqPH.toFixed(1)})`, tx(25.0)+7, ty(eqPH));
+
+  ctx.restore();
+}
+
+/* ============ COLOUR ============ */
+function solutionColor(pH) {
+  if (state.indicator === 'none') return '#e3f2fd';
+  const ind = indicatorData[state.indicator];
+  if (pH <= ind.low)  return ind.colorLow;
+  if (pH >= ind.high) return ind.colorHigh;
+  const t = (pH - ind.low) / (ind.high - ind.low);
+  return lerpColor(ind.colorLow, ind.colorHigh, t);
+}
+function lerpColor(a, b, t) {
+  const pa = hexToRgb(a), pb = hexToRgb(b);
+  const r = Math.round(pa.r + (pb.r - pa.r)*t);
+  const g = Math.round(pa.g + (pb.g - pa.g)*t);
+  const bl= Math.round(pa.b + (pb.b - pa.b)*t);
+  return `rgb(${r},${g},${bl})`;
+}
+function hexToRgb(h) {
+  h = h.replace('#','');
+  if (h.length === 3) h = h.split('').map(c=>c+c).join('');
+  return { r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16) };
+}
+function indicatorColourLabel(pH) {
+  if (state.indicator === 'none') return '—';
+  const ind = indicatorData[state.indicator];
+  if (pH <= ind.low)  return ind.labelLow;
+  if (pH >= ind.high) return ind.labelHigh;
+  return ind.labelMid;
+}
+
+/* ============ UPDATE ============ */
+function update() {
+  const V = state.volume;
+  const pH = computePH(state.type, V);
+  const titr = titrations[state.type];
+
+  phMeterValue.textContent = pH.toFixed(2);
+  phText.textContent = pH.toFixed(2);
+  nText.textContent = (0.10 * V / 1000).toFixed(4);
+  volSlider.value = V;
+  volReadout.textContent = V.toFixed(1) + ' cm³';
+
+  beakerLabelEl.textContent = titr.beakerLabel;
+  buretteLabelEl.textContent = titr.buretteLabel;
+  volHeadingEl.textContent = titr.volHeading;
+  typeDescription.textContent = titr.description;
+
+  solution.setAttribute('fill', solutionColor(pH));
+
+  const maxLevel = 210;
+  const level = maxLevel * (1 - V/50);
+  const bL = $('buretteLiquid');
+  bL.setAttribute('y', 40 + (maxLevel - level));
+  bL.setAttribute('height', level);
+
+  const eqMessages = {
+    'SA_SB':'pH = 7.0 at 25.0 cm³ (neutral salt, sharp pH jump from ~3 to ~11)',
+    'WA_SB':'pH ≈ 8.7 at 25.0 cm³ (CH₃COO⁻ hydrolyses → alkaline; pH jump ~7 to ~11)',
+    'WB_SA':'pH ≈ 5.3 at 25.0 cm³ (NH₄⁺ hydrolyses → acidic; pH jump ~7 to ~3)',
+    'WB_WA':'pH ≈ 7.0 at 25.0 cm³ — BUT no sharp pH jump! The curve is very gradual throughout.'
+  };
+  eqInfo.textContent = eqMessages[state.type];
+
+  if (state.indicator === 'none') {
+    indRange.textContent = 'No indicator selected.';
+    indicatorInfo.innerHTML = 'Select an indicator to see its transition range on the curve.';
+  } else {
+    const ind = indicatorData[state.indicator];
+    indRange.innerHTML = `${ind.name}: <strong>pH ${ind.low}–${ind.high}</strong> &nbsp;|&nbsp; ${ind.labelLow} → ${ind.labelHigh}`;
+    indicatorInfo.innerHTML = `
+      Current solution appears <strong style="color:${solutionColor(pH)};
+      text-shadow:0 0 1px #333;">${indicatorColourLabel(pH)}</strong>
+      (pH = ${pH.toFixed(2)}). Transition range: <strong>${ind.low} – ${ind.high}</strong>.
+    `;
+  }
+
+  suitabilityInfo.innerHTML = `<strong>For this titration:</strong> ${titr.suitabilityText}`;
+
+  drawGraph();
+}
+
+/* ============ DROP ANIMATION ============ */
+function animateDrop() {
+  drop.setAttribute('opacity', '1');
+  drop.setAttribute('cy', '290');
+  const start = performance.now();
+  function frame(now) {
+    const t = Math.min(1, (now - start)/350);
+    const y = 290 + t*45;
+    drop.setAttribute('cy', y);
+    if (t < 1) requestAnimationFrame(frame);
+    else drop.setAttribute('opacity', '0');
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ============ EVENTS ============ */
+volSlider.addEventListener('input', e => {
+  state.volume = parseFloat(e.target.value);
+  update();
+});
+
+$('titrationSelect').addEventListener('change', e => {
+  state.type = e.target.value;
+  state.volume = 0;
+  update();
+});
+
+document.querySelectorAll('input[name=ind]').forEach(r => {
+  r.addEventListener('change', e => {
+    state.indicator = e.target.value;
+    document.querySelectorAll('#indChoice label').forEach(l => l.classList.remove('active'));
+    e.target.parentElement.classList.add('active');
+    update();
+  });
+});
+
+$('btnDrop').addEventListener('click', () => {
+  state.volume = Math.min(50, state.volume + 1.0);
+  animateDrop();
+  update();
+});
+$('btnDropSmall').addEventListener('click', () => {
+  state.volume = Math.min(50, state.volume + 0.1);
+  animateDrop();
+  update();
+});
+$('btnFill').addEventListener('click', () => {
+  const start = state.volume, end = 50;
+  if (start >= end) return;
+  const t0 = performance.now(), dur = 2500;
+  function step(now) {
+    const t = Math.min(1, (now - t0)/dur);
+    state.volume = start + (end - start) * t;
+    update();
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+});
+$('btnReset').addEventListener('click', () => {
+  state.volume = 0;
+  update();
+});
+
+update();
+</script>
+
+
+</body></html>
