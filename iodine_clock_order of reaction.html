@@ -14,7 +14,7 @@
   <!-- Canvas Confetti CDN -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased selection:bg-sky-500 selection:text-white">
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased selection:bg-sky-500 selection:text-white relative">
   <div id="root"></div>
 
   <script type="text/babel">
@@ -87,7 +87,7 @@
           osc.stop(now + 0.45);
         }
       } catch (e) {
-        // AudioContext autoplay restrictions handled silently
+        // Autoplay restrictions
       }
     }
 
@@ -315,11 +315,11 @@
       }
 
       return (
-        <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
+        <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col pb-16">
           {/* Top Bar */}
           <header className="border-b border-slate-800 bg-slate-950/80 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-xl font-bold text-sky-400 tracking-tight flex items-center gap-2">
+              <h1 className="text-lg sm:text-xl font-bold text-sky-400 tracking-tight flex items-center gap-2">
                 <span>⚗️</span> Iodine Clock Reaction Virtual Lab
               </h1>
               <p className="text-xs text-slate-400">
@@ -764,6 +764,32 @@
 
             </div>
           </main>
+
+          {/* Floating Back to Home button in the Bottom-Left Corner */}
+          <div className="fixed bottom-5 left-5 z-50">
+            <a
+              href="#"
+              onClick={(e) => {
+                if (e.currentTarget.getAttribute('href') === '#') {
+                  e.preventDefault();
+                  if (window.history.length > 1) {
+                    window.history.back();
+                  } else {
+                    window.location.href = '/';
+                  }
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-950/90 hover:bg-slate-900 text-slate-100 hover:text-white border border-slate-700/90 shadow-xl hover:shadow-2xl text-xs font-bold backdrop-blur-md transition-all hover:scale-105 active:scale-95 group"
+              id="bottom-left-home-btn"
+              title="Back to Home"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-sky-400 group-hover:-translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              <span>Back to Home</span>
+            </a>
+          </div>
         </div>
       );
     }
